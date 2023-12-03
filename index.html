@@ -98,7 +98,7 @@
 		let reactionTimeStart;
 		let reactionTimes = [];
 		
-		let numberDigits = 100;
+		let numberDigits = 111;
 		
 		const numberContainer = document.getElementById('number-container');
 		const textContainer = document.getElementById('text-container');
@@ -151,7 +151,7 @@
 			const newDuration = parseInt(document.getElementById('durationInput').value);
 
 			// Update the time interval variable
-			numberDigits = newDuration;
+			numberDigits = newDuration+11;
 
 			// Log the updated value (you can perform other actions here)
 			console.log('Updated Duration:', numberDigits);
@@ -181,7 +181,7 @@
 				document.addEventListener('keydown', handleKeyPress);
 				document.addEventListener('touchstart', handleTouchStart);
 				function playNextNumber() {
-					if (digitCount < numberDigits) {
+					if (digitCount < numberDigits+2) {
 						setTimeout(() => {
 							nextNumber();
 							digitCount++;
@@ -204,20 +204,22 @@
 			currentIndex++;
 			currentNumber = (currentIndex) % 10;
 			displayNumber = currentNumber;
+			
+			if (currentIndex <= numberDigits - 11){
+				if (freePass == false && currentIndex > 9) {
+					const randomNumber = Math.floor(Math.random() * 10);
 
-			if (freePass == false && currentIndex > 9) {
-				const randomNumber = Math.floor(Math.random() * 10);
-
-				if (randomNumber === 1) {
-					displayNumber = Math.floor(Math.random() * 10);
-					negatives++; 
-					positives--;
-					freePass = true;
+					if (randomNumber === 1) {
+						displayNumber = Math.floor(Math.random() * 10);
+						negatives++; 
+						positives--;
+						freePass = true;
+					}
+				} else {
+					freePass = false;
 				}
-			} else {
-				freePass = false;
-			}
-			positives++;
+				positives++;
+				}
 			
 			if (currentIndex > numberDigits - 11){
 				currentNumber = -1;
