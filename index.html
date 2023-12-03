@@ -234,7 +234,7 @@
 
         function stopGame() {
 			textContainer.innerText = `Correcte interventie: ${trueNegatives} / ${negatives}`;
-			text2Container.innerText = `Correcte laten passeren: ${positives - falseNegatives} / ${positives}`;
+			text2Container.innerText = `Correct laten passeren: ${positives - falseNegatives} / ${positives}`;
 			avgTime = Math.round(reactionTimes.reduce((accumulator, currentValue) => accumulator + currentValue, 0)/reactionTimes.length);
 			text3Container.innerText = `Gemiddelde reactietijd ${avgTime} ms`;
             clearInterval(numberInterval);
