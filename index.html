@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treinbestuurder</title>
+	<style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #eee; /* Light background color */
+            transition: background-color 0.5s; /* Smooth transition effect */
+            color: #333; /* Default text color */
+			font-size: 20px; /* Default font size */
+        }
+		button {
+            font-size: 20px; /* Default button font size */
+        }
+        button:hover {
+            background-color: #ddd; /* Light mode button hover background */
+        }
+		
+        .dark-theme {
+            background-color: #111; /* Dark background color */
+            color: #fff; /* Light text color in dark theme */
+        }
+        .dark-theme button {
+            background-color: #333; /* Dark mode button background */
+            color: #fff; /* Dark mode button text color */
+        }
+		.dark-theme button:hover {
+            background-color: #666; /* Dark mode button hover background */
+        }
+        .game-container {
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            width: 300px;
+            display: none;
+        }
+		#number-container {
+			font-size: 60pt;
+			text-align: center;
+		}
+    </style>
+</head>
+<body>
+    <button onclick="toggleDarkTheme()">Donkere modus</button>
+	<script>
+        function toggleDarkTheme() {
+            document.body.classList.toggle('dark-theme');
+        }
+    </script>
+    <h3>Spelregels</h3>
+	<p>Druk op spatie wanneer in de rij een fout staat. Lage streepjes tellen niet mee. </p>
+    
+    
+	
+	<div class="input-container"> 
+		<label for="intervalInput">Tijd tussen cijfers (ms):</label>
+		<input onchange="changeInterval()" type="number" id="intervalInput" value="300">
+	</div> 
+	<div class="input-container">
+		<label for="durationInput">Aantal cijfers:</label>
+		<input onchange="changeDuration()" type="number" id="durationInput" value="100">
+	</div>
+	
+	<button id="start-btn" onclick="startGame()">Start</button>
+	
+    <div id="number-container"></div>
+	
+	<div id="text-container"></div>
+	
+	<div id="text2-container"></div>
+	
+	<div id="text3-container"></div>
+
+    <script>
+        let isGameRunning = false;
+        let numberInterval;
+		let currentIndex;
+		let currentNumber;
+		let displayNumber;
+		let digitCount;
+		let freePass = true;
+		let listenSpace = true;
+		
+		let timeInterval = 300;
+		
+		let displaySequence;
+		let trueSequence; 
+		
+		let trueNegatives = 0;
+		let negatives = 0;
+		
+		let falseNegatives = 0;
+		let positives = 0;
+		let reactionTimeStart;
+		let reactionTimes = [];
+		
+		let numberDigits = 100;
+		
+		const numberContainer = document.getElementById('number-container');
+		const textContainer = document.getElementById('text-container');
+		const text2Container = document.getElementById('text2-container');
+		const text3Container = document.getElementById('text3-container');
+		const startButton = document.getElementById('start-btn');
+		
+		const intervalInput = document.getElementById('intervalInput');
+		const durationInput = document.getElementById('durationInput');
+		
+		function formatDisplaySequence(sequence) {
+			// Ensure the input array has at most 10 elements
+			const truncatedSequence = sequence.slice(0, 10);
+
+			// Map each element to its corresponding character in the output string
+			const formattedString = truncatedSequence.map((digit) => {
+			// If the element is -1, replace it with an underscore; otherwise, keep the digit
+			return digit === -1 ? '_' : String(digit);
+			}).join(' '); // Join the array into a string with spaces between characters
+
+			// Ensure the output string is exactly 10 characters long
+			return formattedString.padEnd(10, '_');
+		}
+		
+		function findFirstNonMatchingIndex(arr1, arr2) {
+			// Ensure both arrays have the same length
+			if (arr1.length !== arr2.length) {
+				throw new Error('Arrays must have the same length');
+			}
+
+			// Find the index of the first non-matching element, or -1 if all elements match
+			return arr1.findIndex((element, index) => element !== arr2[index]);
+		}
+		
+
+		// Function to change the time interval
+		function changeInterval() {
+			// Get the value from the input box
+			const newInterval = parseInt(document.getElementById('intervalInput').value);
+
+			// Update the time interval variable
+			timeInterval = newInterval;
+
+			// Log the updated value (you can perform other actions here)
+			console.log('Updated Time Interval:', timeInterval);
+		}
+		
+		function changeDuration() {
+			// Get the value from the input box
+			const newDuration = parseInt(document.getElementById('durationInput').value);
+
+			// Update the time interval variable
+			numberDigits = newDuration;
+
+			// Log the updated value (you can perform other actions here)
+			console.log('Updated Duration:', numberDigits);
+		}
+		
+        function startGame() {
+            if (!isGameRunning) {
+				intervalInput.disabled = true;
+				durationInput.disabled = true;
+                isGameRunning = true;
+				currentIndex = 0;
+				currentNumber = 0;
+				displayNumber = 0;
+				digitCount = 0;
+				trueNegatives = 0;
+				negatives = 0;
+				falseNegatives = 0;
+				positives = 0;
+				displaySequence = [-1, -1, -1, -1, -1, -1, -1, -1, -1, 0];
+				trueSequence = [-1, -1, -1, -1, -1, -1, -1, -1, -1, 0];
+				numberContainer.innerText = formatDisplaySequence(displaySequence);
+				textContainer.innerText = '';
+				text2Container.innerText = '';
+				text3Container.innerText = '';
+                startButton.disabled = true;
+				document.addEventListener('keydown', handleKeyPress);
+				function playNextNumber() {
+					if (digitCount < numberDigits) {
+						setTimeout(() => {
+							nextNumber();
+							digitCount++;
+							playNextNumber();
+						}, timeInterval);
+					} else {
+						stopGame();
+					}
+				}
+
+				playNextNumber();
+
+            }
+        }
+
+        function nextNumber() {
+			textContainer.innerText = '';
+			text2Container.innerText = '';
+			text3Container.innerText = '';
+			currentIndex++;
+			currentNumber = (currentIndex) % 10;
+			displayNumber = currentNumber;
+
+			if (freePass == false && currentIndex > 9) {
+				const randomNumber = Math.floor(Math.random() * 10);
+
+				if (randomNumber === 1) {
+					displayNumber = Math.floor(Math.random() * 10);
+					negatives++; 
+					positives--;
+					freePass = true;
+				}
+			} else {
+				freePass = false;
+			}
+			positives++;
+			
+			if (currentIndex > numberDigits - 11){
+				currentNumber = -1;
+				displayNumber = -1;
+			}
+
+			displaySequence.shift();
+			displaySequence.push(displayNumber);
+			trueSequence.shift();
+			trueSequence.push(currentNumber);
+			
+            numberContainer.innerText = formatDisplaySequence(displaySequence);
+			listenSpace = true;
+
+        }
+
+        function stopGame() {
+			textContainer.innerText = `Correcte interventie: ${trueNegatives} / ${negatives}`;
+			text2Container.innerText = `Correcte laten passeren: ${positives - falseNegatives} / ${positives}`;
+			avgTime = Math.round(reactionTimes.reduce((accumulator, currentValue) => accumulator + currentValue, 0)/reactionTimes.length);
+			text3Container.innerText = `Gemiddelde reactietijd ${avgTime} ms`;
+            clearInterval(numberInterval);
+            isGameRunning = false;
+            document.getElementById('start-btn').disabled = false;
+			document.removeEventListener('keydown', handleKeyPress);
+			intervalInput.disabled = false;
+			durationInput.disabled = false;
+        }
+
+
+        function handleKeyPress(event) {
+            // Check if the pressed key is the spacebar (key code 32)
+            if (event.keyCode === 32 && listenSpace == true) {
+				let nonMatchingIndex = findFirstNonMatchingIndex(displaySequence, trueSequence);
+				if (nonMatchingIndex > -1){
+					reactionTimes.push((10-nonMatchingIndex)*timeInterval);
+					trueNegatives++;
+					displaySequence[nonMatchingIndex] = trueSequence[nonMatchingIndex];
+					numberContainer.innerText = formatDisplaySequence(displaySequence);
+				} else {
+					falseNegatives++;
+					textContainer.innerText = "strafpunt";
+				}
+				listenSpace = false; 
+            }
+        }
+
+
+    </script>
+
+</body>
+</html>
