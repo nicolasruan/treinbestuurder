@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, orientation=landscape">
     <title>Treinbestuurder</title>
 	<style>
         body {
@@ -52,7 +52,7 @@
         }
     </script>
     <h3>Spelregels</h3>
-	<p>Druk op spatie wanneer in de rij een fout staat. Lage streepjes tellen niet mee. </p>
+	<p>Druk op spatie of tik op het scherm wanneer in de rij een fout staat. Lage streepjes tellen niet mee. </p>
     
     
 	
@@ -170,6 +170,7 @@
 				negatives = 0;
 				falseNegatives = 0;
 				positives = 0;
+				reactionTimes = [];
 				displaySequence = [-1, -1, -1, -1, -1, -1, -1, -1, -1, 0];
 				trueSequence = [-1, -1, -1, -1, -1, -1, -1, -1, -1, 0];
 				numberContainer.innerText = formatDisplaySequence(displaySequence);
@@ -178,6 +179,7 @@
 				text3Container.innerText = '';
                 startButton.disabled = true;
 				document.addEventListener('keydown', handleKeyPress);
+				document.addEventListener('touchstart', handleTouchStart);
 				function playNextNumber() {
 					if (digitCount < numberDigits) {
 						setTimeout(() => {
@@ -241,6 +243,7 @@
             isGameRunning = false;
             document.getElementById('start-btn').disabled = false;
 			document.removeEventListener('keydown', handleKeyPress);
+			document.removeEventListener('touchstart', handleTouchStart);
 			intervalInput.disabled = false;
 			durationInput.disabled = false;
         }
@@ -262,6 +265,21 @@
 				listenSpace = false; 
             }
         }
+		function handleTouchStart(event){
+            if (listenSpace == true) {
+				let nonMatchingIndex = findFirstNonMatchingIndex(displaySequence, trueSequence);
+				if (nonMatchingIndex > -1){
+					reactionTimes.push((10-nonMatchingIndex)*timeInterval);
+					trueNegatives++;
+					displaySequence[nonMatchingIndex] = trueSequence[nonMatchingIndex];
+					numberContainer.innerText = formatDisplaySequence(displaySequence);
+				} else {
+					falseNegatives++;
+					textContainer.innerText = "strafpunt";
+				}
+				listenSpace = false; 
+            }
+		}
 
 
     </script>
