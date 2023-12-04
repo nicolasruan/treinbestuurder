@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, orientation=landscape">
-    <title>Treinbestuurder</title>
+    <title>Concentratietest</title>
 	<style>
         body {
             font-family: Arial, sans-serif;
@@ -11,14 +11,23 @@
             background-color: #eee; /* Light background color */
             transition: background-color 0.5s; /* Smooth transition effect */
             color: #333; /* Default text color */
-			font-size: 20px; /* Default font size */
+			margin: 100px;
+			font-size: 20px;
         }
 		button {
-            font-size: 20px; /* Default button font size */
-        }
-        button:hover {
-            background-color: #ddd; /* Light mode button hover background */
-        }
+			padding: 10px 20px;
+			font-size: 14px;
+			margin-top: 10px;
+			cursor: pointer;
+			border: 1px solid #333;
+			border-radius: 5px;
+			background-color: #fff;
+			margin-bottom: 20px;
+		}
+
+		button:hover {
+			background-color: #eee;
+		}
 		
         .dark-theme {
             background-color: #111; /* Dark background color */
@@ -38,6 +47,9 @@
             width: 300px;
             display: none;
         }
+		div {
+			margin-bottom: 20px;
+		}
 		#number-container {
 			font-size: 60pt;
 			text-align: center;
@@ -51,8 +63,8 @@
             document.body.classList.toggle('dark-theme');
         }
     </script>
-    <h3>Spelregels</h3>
-	<p>Druk op spatie of tik op het scherm wanneer in de rij een fout staat. Lage streepjes tellen niet mee. </p>
+    <h3 id="instructions-head">Spelregels</h3>
+	<p id="instructions">Druk op spatie of tik op het scherm wanneer in de rij een fout staat. Lage streepjes tellen niet mee. </p>
     
     
 	
@@ -67,15 +79,18 @@
 	
 	<button id="start-btn" onclick="startGame()">Start</button>
 	
-    <div id="number-container"></div>
+    <p id="number-container"></p>
 	
-	<div id="text-container"></div>
+	<p id="text4-container"></p>
 	
-	<div id="text2-container"></div>
+	<p id="text-container"></p>
 	
-	<div id="text3-container"></div>
+	<p id="text2-container"></p>
+	
+	<p id="text3-container"></p>
 
     <script>
+		toggleDarkTheme();
         let isGameRunning = false;
         let numberInterval;
 		let currentIndex;
@@ -104,10 +119,21 @@
 		const textContainer = document.getElementById('text-container');
 		const text2Container = document.getElementById('text2-container');
 		const text3Container = document.getElementById('text3-container');
+		const text4Container = document.getElementById('text4-container');
 		const startButton = document.getElementById('start-btn');
 		
 		const intervalInput = document.getElementById('intervalInput');
 		const durationInput = document.getElementById('durationInput');
+		
+		function hideInstructions(){
+			document.getElementById('instructions-head').style.display = 'none';
+			document.getElementById('instructions').style.display = 'none';
+		}
+		
+		function showInstructions(){
+			document.getElementById('instructions-head').style.display = 'block';
+			document.getElementById('instructions').style.display = 'block';
+		}
 		
 		function formatDisplaySequence(sequence) {
 			// Ensure the input array has at most 10 elements
@@ -159,6 +185,7 @@
 		
         function startGame() {
             if (!isGameRunning) {
+				hideInstructions();
 				intervalInput.disabled = true;
 				durationInput.disabled = true;
                 isGameRunning = true;
@@ -177,7 +204,8 @@
 				textContainer.innerText = '';
 				text2Container.innerText = '';
 				text3Container.innerText = '';
-                startButton.disabled = true;
+				text4Container.innerText = '';
+                startButton.style.display = "none";
 				document.addEventListener('keydown', handleKeyPress);
 				document.addEventListener('touchstart', handleTouchStart);
 				function playNextNumber() {
@@ -201,6 +229,7 @@
 			textContainer.innerText = '';
 			text2Container.innerText = '';
 			text3Container.innerText = '';
+			text4Container.innerText = '';
 			currentIndex++;
 			currentNumber = (currentIndex) % 10;
 			displayNumber = currentNumber;
@@ -237,6 +266,8 @@
         }
 
         function stopGame() {
+			numberContainer.innerText = '';
+			text4Container.innerText = 'Resultaten';
 			textContainer.innerText = `Correcte interventie: ${trueNegatives} / ${negatives}`;
 			text2Container.innerText = `Correct laten passeren: ${positives - falseNegatives} / ${positives}`;
 			avgTime = Math.round(reactionTimes.reduce((accumulator, currentValue) => accumulator + currentValue, 0)/reactionTimes.length);
@@ -246,8 +277,8 @@
             document.getElementById('start-btn').disabled = false;
 			document.removeEventListener('keydown', handleKeyPress);
 			document.removeEventListener('touchstart', handleTouchStart);
-			intervalInput.disabled = false;
-			durationInput.disabled = false;
+			//showInstructions();
+			//startButton.style.display = "inline";
         }
 
 
